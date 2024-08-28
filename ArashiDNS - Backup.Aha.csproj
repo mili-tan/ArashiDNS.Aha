@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Content Remove="C:\Users\Youxuan\.nuget\packages\arsoft.tools.net\3.6.1\contentFiles\any\net6.0\LICENSE" />
-    <Content Remove="C:\Users\Youxuan\.nuget\packages\arsoft.tools.net\3.6.1\contentFiles\any\net6.0\NOTICE" />
   </ItemGroup>
 
   <ItemGroup>
