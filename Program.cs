@@ -93,7 +93,8 @@ namespace ArashiDNS.Aha
 
                 if (quest.RecordType is RecordType.A or RecordType.Aaaa or RecordType.CName or RecordType.Ns or RecordType.Txt)
                 {
-                    var res = await GetRes(quest.Name.ToString(), quest.RecordType.ToString());
+                    var res = await GetRes(quest.Name.ToString(), quest.RecordType.ToString(),
+                        TryGetEcs(query, out var ip) ? ip.ToString() : null);
                     if (res != null && res.Any())
                     {
                         foreach (var item in res)
@@ -136,7 +137,7 @@ namespace ArashiDNS.Aha
             };
         }
 
-        public static async Task<string?[]?> GetRes(string name, string type)
+        public static async Task<string?[]?> GetRes(string name, string type, string? ecs = null)
         {
             var ts = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
             var key = Convert.ToHexString(
@@ -145,12 +146,40 @@ namespace ArashiDNS.Aha
             var url =
                 $"http://{Server}/resolve?name={name}&type={type}&uid={AccountID}&ak={AccessKeyID}&key={key}&ts={ts}&short=1";
 
+            if (ecs != null && !string.IsNullOrWhiteSpace(ecs)) url += $"&edns_client_subnet={ecs}";
+
             var client = ClientFactory!.CreateClient();
             client.Timeout = Timeout;
+            client.DefaultRequestHeaders.Add("User-Agent", "ArashiDNS.Aha/0.1");
 
             return JsonNode.Parse(await client.GetStringAsync(url))
                 ?.AsArray()
                 .Select(x => x?.ToString()).ToArray();
+        }
+
+
+        public static bool TryGetEcs(DnsMessage dnsMsg, out IPNetwork ipNetwork)
+        {
+            try
+            {
+                ipNetwork = new IPNetwork(IPAddress.Any, 0);
+
+                if (!dnsMsg.IsEDnsEnabled) return false;
+                foreach (var eDnsOptionBase in dnsMsg.EDnsOptions?.Options.ToArray()!)
+                {
+                    if (eDnsOptionBase is not ClientSubnetOption option) continue;
+                    ipNetwork = new IPNetwork(option.Address, option.SourceNetmask);
+                    return !Equals(option.Address, IPAddress.Any) && !Equals(option.Address, IPAddress.IPv6Any) &&
+                           !IPAddress.IsLoopback(option.Address);
+                }
+
+                return false;
+            }
+            catch (Exception)
+            {
+                ipNetwork = new IPNetwork(IPAddress.Any, 0);
+                return false;
+            }
         }
     }
 }
