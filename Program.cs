@@ -64,6 +64,8 @@ namespace ArashiDNS.Aha
                 EventWaitHandle wait = new AutoResetEvent(false);
                 while (true) wait.WaitOne();
             });
+
+            cmd.Execute(args);
         }
 
         private static async Task DnsServerOnQueryReceived(object sender, QueryReceivedEventArgs e)
