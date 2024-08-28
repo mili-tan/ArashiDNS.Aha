@@ -83,12 +83,12 @@ namespace ArashiDNS.Aha
             if (e.Query is not DnsMessage query) return;
             try
             {
-                var msg = query.CreateResponseInstance();
+                var response = query.CreateResponseInstance();
 
                 if (!query.Questions.Any())
                 {
-                    msg.ReturnCode = ReturnCode.ServerFailure;
-                    e.Response = msg;
+                    response.ReturnCode = ReturnCode.ServerFailure;
+                    e.Response = response;
                     return;
                 }
 
@@ -97,18 +97,19 @@ namespace ArashiDNS.Aha
                 if (quest.RecordType is RecordType.A or RecordType.Aaaa or RecordType.CName or RecordType.Ns
                     or RecordType.Txt)
                 {
-                    var dnsEntity = await GetRes(quest.Name.ToString(), quest.RecordType.ToString(),
-                        TryGetEcs(query, out var ip) ? ip.ToString() : null);
-                    if (dnsEntity!=null)
+                    var dnsEntity = await GetDnsEntity(quest.Name.ToString(), quest.RecordType.ToString(),
+                        TryGetEcs(query, out var ecs) ? ecs.ToString() : null);
+                    if (dnsEntity != null)
                     {
-                        msg.ReturnCode = (ReturnCode)dnsEntity.Status!;
+                        response.ReturnCode = (ReturnCode) dnsEntity.Status!;
                         if (dnsEntity.Answer != null && dnsEntity.Answer.Any())
-                            foreach (var item in dnsEntity.Answer) msg.AnswerRecords.Add(GetRecord(item));
+                            foreach (var item in dnsEntity.Answer)
+                                response.AnswerRecords.Add(GetRecord(item));
                     }
                     else
-                        msg.ReturnCode = ReturnCode.ServerFailure;
+                        response.ReturnCode = ReturnCode.ServerFailure;
 
-                    e.Response = msg;
+                    e.Response = response;
                 }
                 else
                 {
@@ -145,7 +146,7 @@ namespace ArashiDNS.Aha
             };
         }
 
-        public static async Task<DNSEntity?> GetRes(string name, string type, string? ecs = null)
+        public static async Task<DNSEntity?> GetDnsEntity(string name, string type, string? ecs = null)
         {
             var ts = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
             var key = Convert.ToHexString(
@@ -159,17 +160,15 @@ namespace ArashiDNS.Aha
             client.Timeout = Timeout;
             client.DefaultRequestHeaders.Add("User-Agent", "ArashiDNS.Aha/0.1");
 
-            var res = await client.GetStringAsync(url);
-            return JsonSerializer.Deserialize<DNSEntity>(res);
+            return JsonSerializer.Deserialize<DNSEntity>(await client.GetStringAsync(url));
         }
 
 
         public static bool TryGetEcs(DnsMessage dnsMsg, out IPNetwork ipNetwork)
         {
+            ipNetwork = new IPNetwork(IPAddress.Any, 0);
             try
             {
-                ipNetwork = new IPNetwork(IPAddress.Any, 0);
-
                 if (!dnsMsg.IsEDnsEnabled) return false;
                 foreach (var eDnsOptionBase in dnsMsg.EDnsOptions?.Options.ToArray()!)
                 {
@@ -183,7 +182,6 @@ namespace ArashiDNS.Aha
             }
             catch (Exception)
             {
-                ipNetwork = new IPNetwork(IPAddress.Any, 0);
                 return false;
             }
         }
