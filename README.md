@@ -9,7 +9,7 @@
 ```
 git clone https://github.com/mili-tan/ArashiDNS.Aha
 cd ArashiDNS.Aha
-dotnet run <AccountID> <AccessKey Secret> <AccessKey ID>
+dotnet run -c Release <AccountID> <AccessKey Secret> <AccessKey ID>
 ```
 或者使用 Docker (很快就来)。
 ```
