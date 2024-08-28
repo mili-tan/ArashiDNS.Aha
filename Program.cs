@@ -1,6 +1,8 @@
 ﻿using System.Net;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using ARSoft.Tools.Net;
 using ARSoft.Tools.Net.Dns;
@@ -91,15 +93,16 @@ namespace ArashiDNS.Aha
 
                 var quest = query.Questions.First();
 
-                if (quest.RecordType is RecordType.A or RecordType.Aaaa or RecordType.CName or RecordType.Ns or RecordType.Txt)
+                if (quest.RecordType is RecordType.A or RecordType.Aaaa or RecordType.CName or RecordType.Ns
+                    or RecordType.Txt)
                 {
-                    var res = await GetRes(quest.Name.ToString(), quest.RecordType.ToString(),
+                    var dnsEntity = await GetRes(quest.Name.ToString(), quest.RecordType.ToString(),
                         TryGetEcs(query, out var ip) ? ip.ToString() : null);
-                    if (res != null && res.Any())
+                    if (dnsEntity!=null)
                     {
-                        foreach (var item in res)
-                            if (item != null && !string.IsNullOrWhiteSpace(item))
-                                msg.AnswerRecords.Add(GetRecord(quest, item));
+                        msg.ReturnCode = (ReturnCode)dnsEntity.Status!;
+                        if (dnsEntity.Answer != null && dnsEntity.Answer.Any())
+                            foreach (var item in dnsEntity.Answer) msg.AnswerRecords.Add(GetRecord(item));
                     }
                     else
                         msg.ReturnCode = ReturnCode.ServerFailure;
@@ -124,37 +127,38 @@ namespace ArashiDNS.Aha
             }
         }
 
-        public static DnsRecordBase GetRecord(DnsQuestion quest, string item, int ttl = 600)
+        public static DnsRecordBase GetRecord(Answer answer)
         {
-            return quest.RecordType switch
+            var type = (RecordType) answer.Type;
+            var name = DomainName.Parse(answer.Name);
+            var ttl = answer.TTL;
+            return type switch
             {
-                RecordType.A => new ARecord(quest.Name, 600, IPAddress.Parse(item)),
-                RecordType.Aaaa => new AaaaRecord(quest.Name, 600, IPAddress.Parse(item)),
-                RecordType.CName => new CNameRecord(quest.Name, 600, DomainName.Parse(item)),
-                RecordType.Ns => new NsRecord(quest.Name, 600, DomainName.Parse(item)),
-                RecordType.Txt => new TxtRecord(quest.Name, 600, item),
-                _ => new TxtRecord(quest.Name, 600, item)
+                RecordType.A => new ARecord(name, ttl, IPAddress.Parse(answer.Data)),
+                RecordType.Aaaa => new AaaaRecord(name, ttl, IPAddress.Parse(answer.Data)),
+                RecordType.CName => new CNameRecord(name, ttl, DomainName.Parse(answer.Data)),
+                RecordType.Ns => new NsRecord(name, ttl, DomainName.Parse(answer.Data)),
+                RecordType.Txt => new TxtRecord(name, ttl, answer.Data.Trim('\"')),
+                _ => new TxtRecord(name, ttl, answer.Data.Trim('\"'))
             };
         }
 
-        public static async Task<string?[]?> GetRes(string name, string type, string? ecs = null)
+        public static async Task<DNSEntity?> GetRes(string name, string type, string? ecs = null)
         {
             var ts = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
             var key = Convert.ToHexString(
                     SHA256.HashData(Encoding.UTF8.GetBytes(AccountID + AccessKeySecret + ts + name + AccessKeyID)))
                 .ToLower();
             var url =
-                $"http://{Server}/resolve?name={name}&type={type}&uid={AccountID}&ak={AccessKeyID}&key={key}&ts={ts}&short=1";
+                $"http://{Server}/resolve?name={name}&type={type}&uid={AccountID}&ak={AccessKeyID}&key={key}&ts={ts}";
 
             if (ecs != null && !string.IsNullOrWhiteSpace(ecs)) url += $"&edns_client_subnet={ecs}";
-
             var client = ClientFactory!.CreateClient();
             client.Timeout = Timeout;
             client.DefaultRequestHeaders.Add("User-Agent", "ArashiDNS.Aha/0.1");
 
-            return JsonNode.Parse(await client.GetStringAsync(url))
-                ?.AsArray()
-                .Select(x => x?.ToString()).ToArray();
+            var res = await client.GetStringAsync(url);
+            return JsonSerializer.Deserialize<DNSEntity>(res);
         }
 
 
