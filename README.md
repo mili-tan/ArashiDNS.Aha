@@ -11,7 +11,11 @@ git clone https://github.com/mili-tan/ArashiDNS.Aha
 cd ArashiDNS.Aha
 dotnet run -c Release <AccountID> <AccessKey Secret> <AccessKey ID>
 ```
-或者使用 Docker：
+或者使用 Docker（南大镜像）：
+```
+docker run -d -p 127.0.0.1:16883:16883 -p 127.0.0.1:16883:16883/udp ghcr.nju.edu.cn/mili-tan/arashidns.aha <AccountID> <AccessKey Secret> <AccessKey ID> -l 0.0.0.0:16883
+```
+GHCR：
 ```
 docker run -d -p 127.0.0.1:16883:16883 -p 127.0.0.1:16883:16883/udp ghcr.io/mili-tan/arashidns.aha <AccountID> <AccessKey Secret> <AccessKey ID> -l 0.0.0.0:16883
 ```
