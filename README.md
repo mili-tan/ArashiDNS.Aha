@@ -11,7 +11,12 @@ git clone https://github.com/mili-tan/ArashiDNS.Aha
 cd ArashiDNS.Aha
 dotnet run -c Release <AccountID> <AccessKey Secret> <AccessKey ID>
 ```
-或者使用 Docker (很快就来)。
+或者使用 Docker：
+```
+docker run -d -p 127.0.0.1:16883:16883 -p 127.0.0.1:16883:16883/udp ghcr.io/mili-tan/arashidns.aha <AccountID> <AccessKey Secret> <AccessKey ID> -l 0.0.0.0:16883
+```
+--------
+
 ```
 ArashiDNS.Aha - 阿里云递归（公共）HTTP DNS 客户端
 Copyright (c) 2024 Milkey Tan. Code released under the MIT License
