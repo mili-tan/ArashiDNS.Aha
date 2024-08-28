@@ -27,18 +27,25 @@ namespace ArashiDNS.Aha
                 Name = "ArashiDNS.Aha",
                 Description = "ArashiDNS.Aha - 阿里云递归（公共）HTTP DNS 客户端" +
                               Environment.NewLine +
-                              $"Copyright (c) {DateTime.Now.Year} Milkey Tan. Code released under the MPL License"
+                              $"Copyright (c) {DateTime.Now.Year} Milkey Tan. Code released under the MIT License"
             };
             cmd.HelpOption("-?|-h|--help");
-            var accountIDArgument = cmd.Argument("AccountID", "Account ID 为阿里云官网中云解析-公共DNS控制台中的 Account ID，而非阿里云账号 ID");
-            var accessKeySecretArgument = cmd.Argument("AccessKeySecret", "AccessKey Secret 为阿里云官网中云解析-公共 DNS 控制台创建密钥中创建的 AccessKey 的 Secret");
-            var accessKeyIDArgument = cmd.Argument("AccessKeyID", "AccessKey ID 为阿里云官网中云解析-公共 DNS 控制台创建密钥中创建的 AccessKey 的 ID");
+            var accountIDArgument = cmd.Argument("AccountID", "为云解析-公共 DNS 控制台的 Account ID，而非阿里云账号 ID");
+            var accessKeySecretArgument = cmd.Argument("AccessKey Secret", "为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 Secret");
+            var accessKeyIDArgument = cmd.Argument("AccessKey ID", "为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 ID");
             var wOption = cmd.Option<int>("-w <timeout>", "等待回复的超时时间(毫秒)。", CommandOptionType.SingleValue);
             var sOption = cmd.Option<int>("-s <name>", "设置的服务器的地址。", CommandOptionType.SingleValue);
             var ipOption = cmd.Option<string>("-l|--listen <IPEndPoint>", "监听的地址与端口。", CommandOptionType.SingleValue);
 
             cmd.OnExecute(() =>
             {
+                if (!args.Any() && args.Length < 3)
+                {
+                    Console.WriteLine("缺少需要的参数。");
+                    cmd.ShowHelp();
+                    return;
+                }
+
                 AccountID = accountIDArgument.Value ?? "";
                 AccessKeySecret = accessKeySecretArgument.Value ?? "";
                 AccessKeyID = accessKeyIDArgument.Value ?? "";
@@ -78,6 +85,7 @@ namespace ArashiDNS.Aha
                 if (!query.Questions.Any())
                 {
                     msg.ReturnCode = ReturnCode.ServerFailure;
+                    e.Response = msg;
                     return;
                 }
 
