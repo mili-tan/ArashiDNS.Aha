@@ -112,10 +112,12 @@ namespace ArashiDNS.Aha
                 }
                 else
                 {
+                    Console.WriteLine(Timeout.Milliseconds);
                     e.Response =
                         await new DnsClient(
-                            IPAddress.TryParse(Server, out var svr) ? svr : IPAddress.Parse("223.6.6.6"),
-                            Timeout.Milliseconds).SendMessageAsync(query);
+                                IPAddress.TryParse(Server, out var svr) ? svr : IPAddress.Parse("223.6.6.6"),
+                                (int) Timeout.TotalMilliseconds)
+                            .SendMessageAsync(query);
                 }
             }
             catch (Exception exception)
