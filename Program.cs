@@ -102,6 +102,8 @@ namespace ArashiDNS.Aha
                     }
                     else
                         msg.ReturnCode = ReturnCode.ServerFailure;
+
+                    e.Response = msg;
                 }
                 else
                 {
