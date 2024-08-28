@@ -55,6 +55,7 @@ namespace ArashiDNS.Aha
                 if (wOption.HasValue()) Timeout = TimeSpan.FromMilliseconds(wOption.ParsedValue);
                 if (sOption.HasValue()) Server = sOption.Value()!;
                 if (ipOption.HasValue()) ListenerEndPoint = IPEndPoint.Parse(ipOption.Value()!);
+                if (ListenerEndPoint.Port == 0) ListenerEndPoint.Port = 16883;
 
                 var dnsServer = new DnsServer(new UdpServerTransport(ListenerEndPoint),
                     new TcpServerTransport(ListenerEndPoint));
