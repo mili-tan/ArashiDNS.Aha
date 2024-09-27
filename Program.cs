@@ -44,7 +44,7 @@ namespace ArashiDNS.Aha
             var eOption = cmd.Option<int>("-e <method>",
                 $"设置 ECS 处理模式。{Environment.NewLine}（0=按原样、1=无ECS添加本地IP、2=无ECS添加请求IP、3=全部覆盖）",
                 CommandOptionType.SingleValue);
-            var ecsIpOption = cmd.Option<string>("--ecs-address <IPNetwork>", "覆盖设置本地 ECS 地址。",
+            var ecsIpOption = cmd.Option<string>("--ecs-address <IPNetwork>", "覆盖设置本地 ECS 地址。(CIDR 形式，0.0.0.0/0)",
                 CommandOptionType.SingleValue);
             var ipOption = cmd.Option<string>("-l|--listen <IPEndPoint>", "监听的地址与端口。", CommandOptionType.SingleValue);
 
