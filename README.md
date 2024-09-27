@@ -28,15 +28,18 @@ Copyright (c) 2024 Milkey Tan. Code released under the MIT License
 Usage: ArashiDNS.Aha [options] <AccountID> <AccessKey Secret> <AccessKey ID>
 
 Arguments:
-  AccountID                 为云解析-公共 DNS 控制台的 Account ID，而非阿里云账号 ID
-  AccessKey Secret          为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 Secret
-  AccessKey ID              为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 ID
+  AccountID                  为云解析-公共 DNS 控制台的 Account ID，而非阿里云账号 ID
+  AccessKey Secret           为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 Secret
+  AccessKey ID               为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 ID
 
 Options:
-  -?|-h|--help              显示帮助信息。
-  -w <Timeout>              等待回复的超时时间(毫秒)。
-  -s <IPAddress>            设置的服务器的地址。
-  -l|--listen <IPEndPoint>  监听的地址与端口。
+  -?|-h|--help               Show help information.
+  -w <timeout>               等待回复的超时时间（毫秒）。
+  -s <name>                  设置的服务器的地址。
+  -e <method>                设置 ECS 处理模式。
+                             （0=按原样、1=无ECS添加本地IP、2=无ECS添加请求IP、3=全部覆盖）
+  --ecs-address <IPNetwork>  覆盖设置本地 ECS 地址。(CIDR 形式，0.0.0.0/0)
+  -l|--listen <IPEndPoint>   监听的地址与端口。
 ```
 
 ## See also
