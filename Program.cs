@@ -20,7 +20,7 @@ namespace ArashiDNS.Aha
         public static string AccessKeySecret = "";
         public static string AccessKeyID = "";
         public static int EcsMethod = 0;
-        public static IPAddress EcsAddress = IPAddress.Any;
+        public static IPNetwork EcsAddress = new(IPAddress.Any, 0);
         public static IPEndPoint ListenerEndPoint = new(IPAddress.Loopback, 16883);
         public static TimeSpan Timeout = TimeSpan.FromMilliseconds(3000);
 
@@ -42,7 +42,7 @@ namespace ArashiDNS.Aha
             var eOption = cmd.Option<int>("-e <method>",
                 $"设置 ECS 处理模式。{Environment.NewLine}（0=按原样、1=无ECS添加本地IP、2=无ECS添加请求IP、3=全部覆盖）",
                 CommandOptionType.SingleValue);
-            var ecsIpOption = cmd.Option<string>("--ecs-address <IPAddress>", "覆盖设置本地 ECS 地址。",
+            var ecsIpOption = cmd.Option<string>("--ecs-address <IPNetwork>", "覆盖设置本地 ECS 地址。",
                 CommandOptionType.SingleValue);
             var ipOption = cmd.Option<string>("-l|--listen <IPEndPoint>", "监听的地址与端口。", CommandOptionType.SingleValue);
 
@@ -67,23 +67,27 @@ namespace ArashiDNS.Aha
                 if (EcsMethod != 0)
                 {
                     if (ecsIpOption.HasValue())
-                        EcsAddress = IPAddress.Parse(ecsIpOption.Value()!);
+                        EcsAddress = IPNetwork.Parse(ecsIpOption.Value()!);
                     else
                     {
+                        IPAddress originalIp;
                         using var httpClient = new HttpClient();
                         httpClient.DefaultRequestHeaders.Add("User-Agent", "ArashiDNS.C/0.1");
                         try
                         {
-                            EcsAddress = IPAddress.Parse(httpClient
+                            originalIp = IPAddress.Parse(httpClient
                                 .GetStringAsync("https://www.cloudflare-cn.com/cdn-cgi/trace")
                                 .Result.Split('\n').First(i => i.StartsWith("ip=")).Split("=").LastOrDefault()
                                 ?.Trim() ?? string.Empty);
                         }
                         catch (Exception)
                         {
-                            EcsAddress =
+                            originalIp =
                                 IPAddress.Parse(httpClient.GetStringAsync("http://whatismyip.akamai.com/").Result);
                         }
+
+                        EcsAddress = IPNetwork.Parse(string.Join(".",
+                            originalIp.ToString().Split('.').Take(3).Concat(["0/24"])));
                     }
                 }
 
