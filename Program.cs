@@ -7,7 +7,9 @@ using System.Text.Json.Nodes;
 using ARSoft.Tools.Net;
 using ARSoft.Tools.Net.Dns;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
+using IPNetwork = System.Net.IPNetwork;
 
 namespace ArashiDNS.Aha
 {
@@ -134,7 +136,9 @@ namespace ArashiDNS.Aha
                     var ecs = EcsMethod switch
                     {
                         1 => TryGetEcs(query, out var ip) ? ip.ToString() : EcsAddress.ToString(),
-                        2 => TryGetEcs(query, out var ip) ? ip.ToString() : e.RemoteEndpoint.Address + "/24",
+                        2 => TryGetEcs(query, out var ip) && !LocalNetworks.Any(x => x.Contains(e.RemoteEndpoint.Address))
+                            ? ip.ToString()
+                            : string.Join(".", e.RemoteEndpoint.Address.ToString().Split('.').Take(3).Concat(["0/24"])),
                         3 => EcsAddress.ToString(),
                         _ => TryGetEcs(query, out var ip) ? ip.ToString() : null
                     };
@@ -203,7 +207,6 @@ namespace ArashiDNS.Aha
             return JsonSerializer.Deserialize<DNSEntity>(await client.GetStringAsync(url));
         }
 
-
         public static bool TryGetEcs(DnsMessage dnsMsg, out IPNetwork ipNetwork)
         {
             ipNetwork = new IPNetwork(IPAddress.Any, 0);
@@ -225,5 +228,26 @@ namespace ArashiDNS.Aha
                 return false;
             }
         }
+
+        public static HashSet<IPNetwork> LocalNetworks = new()
+        {
+            IPNetwork.Parse("10.0.0.0/8"),
+            IPNetwork.Parse("100.64.0.0/10"),
+            IPNetwork.Parse("127.0.0.0/8"),
+            IPNetwork.Parse("169.254.0.0/16"),
+            IPNetwork.Parse("172.16.0.0/12"),
+            IPNetwork.Parse("192.0.0.0/24"),
+            IPNetwork.Parse("192.0.2.0/24"),
+            IPNetwork.Parse("192.88.99.0/24"),
+            IPNetwork.Parse("192.168.0.0/16"),
+            IPNetwork.Parse("198.18.0.0/15"),
+            IPNetwork.Parse("198.18.0.0/15"),
+            IPNetwork.Parse("198.51.100.0/24"),
+            IPNetwork.Parse("203.0.113.0/24"),
+            IPNetwork.Parse("224.0.0.0/4"),
+            IPNetwork.Parse("233.252.0.0/24"),
+            IPNetwork.Parse("240.0.0.0/4"),
+            IPNetwork.Parse("255.255.255.255/32")
+        };
     }
 }
