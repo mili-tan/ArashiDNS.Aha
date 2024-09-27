@@ -39,6 +39,11 @@ Options:
   -l|--listen <IPEndPoint>  监听的地址与端口。
 ```
 
+## See also
+
+- [xireiki/Aha-Go](https://github.com/xireiki/Aha-Go)
+- [honwen/dnspod-http-dns-libev](https://github.com/honwen/dnspod-http-dns-libev)
+
 ## License
 
 Copyright (c) 2024 Milkey Tan. Code released under the [MIT License](https://github.com/mili-tan/ArashiDNS.Aha/blob/main/LICENSE). 
