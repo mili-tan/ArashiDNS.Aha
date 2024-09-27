@@ -19,6 +19,8 @@ namespace ArashiDNS.Aha
         public static string AccountID = "";
         public static string AccessKeySecret = "";
         public static string AccessKeyID = "";
+        public static int EcsMethod = 0;
+        public static IPAddress EcsAddress = IPAddress.Any;
         public static IPEndPoint ListenerEndPoint = new(IPAddress.Loopback, 16883);
         public static TimeSpan Timeout = TimeSpan.FromMilliseconds(3000);
 
@@ -35,8 +37,13 @@ namespace ArashiDNS.Aha
             var accountIDArgument = cmd.Argument("AccountID", "为云解析-公共 DNS 控制台的 Account ID，而非阿里云账号 ID");
             var accessKeySecretArgument = cmd.Argument("AccessKey Secret", "为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 Secret");
             var accessKeyIDArgument = cmd.Argument("AccessKey ID", "为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 ID");
-            var wOption = cmd.Option<int>("-w <timeout>", "等待回复的超时时间(毫秒)。", CommandOptionType.SingleValue);
-            var sOption = cmd.Option<int>("-s <name>", "设置的服务器的地址。", CommandOptionType.SingleValue);
+            var wOption = cmd.Option<int>("-w <timeout>", "等待回复的超时时间（毫秒）。", CommandOptionType.SingleValue);
+            var sOption = cmd.Option<string>("-s <name>", "设置的服务器的地址。", CommandOptionType.SingleValue);
+            var eOption = cmd.Option<int>("-e <method>",
+                $"设置 ECS 处理模式。{Environment.NewLine}（0=按原样、1=无ECS添加本地IP、2=无ECS添加请求IP、3=全部覆盖）",
+                CommandOptionType.SingleValue);
+            var ecsIpOption = cmd.Option<string>("--ecs-address <IPAddress>", "覆盖设置本地 ECS 地址。",
+                CommandOptionType.SingleValue);
             var ipOption = cmd.Option<string>("-l|--listen <IPEndPoint>", "监听的地址与端口。", CommandOptionType.SingleValue);
 
             cmd.OnExecute(() =>
@@ -54,8 +61,31 @@ namespace ArashiDNS.Aha
 
                 if (wOption.HasValue()) Timeout = TimeSpan.FromMilliseconds(wOption.ParsedValue);
                 if (sOption.HasValue()) Server = sOption.Value()!;
+                if (eOption.HasValue()) EcsMethod = eOption.ParsedValue;
                 if (ipOption.HasValue()) ListenerEndPoint = IPEndPoint.Parse(ipOption.Value()!);
                 if (ListenerEndPoint.Port == 0) ListenerEndPoint.Port = 16883;
+                if (EcsMethod != 0)
+                {
+                    if (ecsIpOption.HasValue())
+                        EcsAddress = IPAddress.Parse(ecsIpOption.Value()!);
+                    else
+                    {
+                        using var httpClient = new HttpClient();
+                        httpClient.DefaultRequestHeaders.Add("User-Agent", "ArashiDNS.C/0.1");
+                        try
+                        {
+                            EcsAddress = IPAddress.Parse(httpClient
+                                .GetStringAsync("https://www.cloudflare-cn.com/cdn-cgi/trace")
+                                .Result.Split('\n').First(i => i.StartsWith("ip=")).Split("=").LastOrDefault()
+                                ?.Trim() ?? string.Empty);
+                        }
+                        catch (Exception)
+                        {
+                            EcsAddress =
+                                IPAddress.Parse(httpClient.GetStringAsync("http://whatismyip.akamai.com/").Result);
+                        }
+                    }
+                }
 
                 var dnsServer = new DnsServer(new UdpServerTransport(ListenerEndPoint),
                     new TcpServerTransport(ListenerEndPoint));
@@ -97,8 +127,14 @@ namespace ArashiDNS.Aha
                 if (quest.RecordType is RecordType.A or RecordType.Aaaa or RecordType.CName or RecordType.Ns
                     or RecordType.Txt)
                 {
-                    var dnsEntity = await GetDnsEntity(quest.Name.ToString(), quest.RecordType.ToString(),
-                        TryGetEcs(query, out var ecs) ? ecs.ToString() : null);
+                    var ecs = EcsMethod switch
+                    {
+                        1 => TryGetEcs(query, out var ip) ? ip.ToString() : EcsAddress.ToString(),
+                        2 => TryGetEcs(query, out var ip) ? ip.ToString() : e.RemoteEndpoint.Address + "/24",
+                        3 => EcsAddress.ToString(),
+                        _ => TryGetEcs(query, out var ip) ? ip.ToString() : null
+                    };
+                    var dnsEntity = await GetDnsEntity(quest.Name.ToString(), quest.RecordType.ToString(), ecs);
                     if (dnsEntity != null)
                     {
                         response.ReturnCode = (ReturnCode) dnsEntity.Status!;
