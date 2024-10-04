@@ -9,7 +9,6 @@ using ARSoft.Tools.Net.Dns;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
-using IPNetwork = System.Net.IPNetwork;
 
 namespace ArashiDNS.Aha
 {
@@ -22,7 +21,7 @@ namespace ArashiDNS.Aha
         public static string AccessKeySecret = "";
         public static string AccessKeyID = "";
         public static int EcsMethod = 0;
-        public static IPNetwork EcsAddress = new(IPAddress.Any, 0);
+        public static IPNetwork2 EcsAddress = new(IPAddress.Any, 0);
         public static IPEndPoint ListenerEndPoint = new(IPAddress.Loopback, 16883);
         public static TimeSpan Timeout = TimeSpan.FromMilliseconds(3000);
 
@@ -69,7 +68,7 @@ namespace ArashiDNS.Aha
                 if (EcsMethod != 0)
                 {
                     if (ecsIpOption.HasValue())
-                        EcsAddress = IPNetwork.Parse(ecsIpOption.Value()!);
+                        EcsAddress = IPNetwork2.Parse(ecsIpOption.Value()!);
                     else
                     {
                         IPAddress originalIp;
@@ -88,8 +87,7 @@ namespace ArashiDNS.Aha
                                 IPAddress.Parse(httpClient.GetStringAsync("http://whatismyip.akamai.com/").Result);
                         }
 
-                        EcsAddress = IPNetwork.Parse(string.Join(".",
-                            originalIp.ToString().Split('.').Take(3).Concat(["0/24"])));
+                        EcsAddress = IPNetwork2.Parse(originalIp + "/24");
                     }
                 }
 
@@ -207,16 +205,16 @@ namespace ArashiDNS.Aha
             return JsonSerializer.Deserialize<DNSEntity>(await client.GetStringAsync(url));
         }
 
-        public static bool TryGetEcs(DnsMessage dnsMsg, out IPNetwork ipNetwork)
+        public static bool TryGetEcs(DnsMessage dnsMsg, out IPNetwork2 ipNetwork)
         {
-            ipNetwork = new IPNetwork(IPAddress.Any, 0);
+            ipNetwork = new IPNetwork2(IPAddress.Any, 0);
             try
             {
                 if (!dnsMsg.IsEDnsEnabled) return false;
                 foreach (var eDnsOptionBase in dnsMsg.EDnsOptions?.Options.ToArray()!)
                 {
                     if (eDnsOptionBase is not ClientSubnetOption option) continue;
-                    ipNetwork = new IPNetwork(option.Address, option.SourceNetmask);
+                    ipNetwork = new IPNetwork2(option.Address, option.SourceNetmask);
                     return !Equals(option.Address, IPAddress.Any) && !Equals(option.Address, IPAddress.IPv6Any) &&
                            !IPAddress.IsLoopback(option.Address);
                 }
@@ -229,25 +227,25 @@ namespace ArashiDNS.Aha
             }
         }
 
-        public static HashSet<IPNetwork> LocalNetworks = new()
+        public static HashSet<IPNetwork2> LocalNetworks = new()
         {
-            IPNetwork.Parse("10.0.0.0/8"),
-            IPNetwork.Parse("100.64.0.0/10"),
-            IPNetwork.Parse("127.0.0.0/8"),
-            IPNetwork.Parse("169.254.0.0/16"),
-            IPNetwork.Parse("172.16.0.0/12"),
-            IPNetwork.Parse("192.0.0.0/24"),
-            IPNetwork.Parse("192.0.2.0/24"),
-            IPNetwork.Parse("192.88.99.0/24"),
-            IPNetwork.Parse("192.168.0.0/16"),
-            IPNetwork.Parse("198.18.0.0/15"),
-            IPNetwork.Parse("198.18.0.0/15"),
-            IPNetwork.Parse("198.51.100.0/24"),
-            IPNetwork.Parse("203.0.113.0/24"),
-            IPNetwork.Parse("224.0.0.0/4"),
-            IPNetwork.Parse("233.252.0.0/24"),
-            IPNetwork.Parse("240.0.0.0/4"),
-            IPNetwork.Parse("255.255.255.255/32")
+            IPNetwork2.Parse("10.0.0.0/8"),
+            IPNetwork2.Parse("100.64.0.0/10"),
+            IPNetwork2.Parse("127.0.0.0/8"),
+            IPNetwork2.Parse("169.254.0.0/16"),
+            IPNetwork2.Parse("172.16.0.0/12"),
+            IPNetwork2.Parse("192.0.0.0/24"),
+            IPNetwork2.Parse("192.0.2.0/24"),
+            IPNetwork2.Parse("192.88.99.0/24"),
+            IPNetwork2.Parse("192.168.0.0/16"),
+            IPNetwork2.Parse("198.18.0.0/15"),
+            IPNetwork2.Parse("198.18.0.0/15"),
+            IPNetwork2.Parse("198.51.100.0/24"),
+            IPNetwork2.Parse("203.0.113.0/24"),
+            IPNetwork2.Parse("224.0.0.0/4"),
+            IPNetwork2.Parse("233.252.0.0/24"),
+            IPNetwork2.Parse("240.0.0.0/4"),
+            IPNetwork2.Parse("255.255.255.255/32")
         };
     }
 }
