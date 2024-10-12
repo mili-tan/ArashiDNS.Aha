@@ -126,6 +126,18 @@ namespace ArashiDNS.Aha
                     return;
                 }
 
+                if (query.Questions.First().RecordClass == RecordClass.Chaos && query.Questions.First().RecordType == RecordType.Txt &&
+                    query.Questions.First().Name.IsEqualOrSubDomainOf(DomainName.Parse("version.bind")))
+                {
+                    var msg = query.CreateResponseInstance();
+                    msg.IsRecursionAllowed = true;
+                    msg.IsRecursionDesired = true;
+                    msg.AnswerRecords.Add(
+                        new TxtRecord(query.Questions.First().Name, 3600, "ArashiDNS.Aha"));
+                    e.Response = msg;
+                    return;
+                }
+
                 var quest = query.Questions.First();
 
                 if (quest.RecordType is RecordType.A or RecordType.Aaaa or RecordType.CName or RecordType.Ns
