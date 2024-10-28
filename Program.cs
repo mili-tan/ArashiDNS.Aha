@@ -126,6 +126,12 @@ namespace ArashiDNS.Aha
                     return;
                 }
 
+                if (DnsCache.TryGet(query,out var cache))
+                {
+                    e.Response = cache;
+                    return;
+                }
+
                 if (query.Questions.First().RecordClass == RecordClass.Chaos && query.Questions.First().RecordType == RecordType.Txt &&
                     query.Questions.First().Name.IsEqualOrSubDomainOf(DomainName.Parse("version.bind")))
                 {
@@ -162,6 +168,8 @@ namespace ArashiDNS.Aha
                     }
                     else
                         response.ReturnCode = ReturnCode.ServerFailure;
+
+                    DnsCache.Add(query, response);
 
                     e.Response = response;
                 }
