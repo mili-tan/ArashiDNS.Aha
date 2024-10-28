@@ -34,6 +34,7 @@ Arguments:
 
 Options:
   -?|-h|--help               Show help information.
+  -n|--no-cache              禁用内置缓存。
   -w <timeout>               等待回复的超时时间（毫秒）。
   -s <name>                  设置的服务器的地址。
   -e <method>                设置 ECS 处理模式。
