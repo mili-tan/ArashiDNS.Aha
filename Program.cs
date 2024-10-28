@@ -21,6 +21,7 @@ namespace ArashiDNS.Aha
         public static string AccessKeySecret = "";
         public static string AccessKeyID = "";
         public static int EcsMethod = 0;
+        public static bool NoCache = false;
         public static IPNetwork2 EcsAddress = new(IPAddress.Any, 0);
         public static IPEndPoint ListenerEndPoint = new(IPAddress.Loopback, 16883);
         public static TimeSpan Timeout = TimeSpan.FromMilliseconds(3000);
@@ -38,6 +39,7 @@ namespace ArashiDNS.Aha
             var accountIDArgument = cmd.Argument("AccountID", "为云解析-公共 DNS 控制台的 Account ID，而非阿里云账号 ID");
             var accessKeySecretArgument = cmd.Argument("AccessKey Secret", "为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 Secret");
             var accessKeyIDArgument = cmd.Argument("AccessKey ID", "为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 ID");
+            var noCacheOption = cmd.Option("-n|--no-cache", "禁用内置缓存。", CommandOptionType.NoValue);
             var wOption = cmd.Option<int>("-w <timeout>", "等待回复的超时时间（毫秒）。", CommandOptionType.SingleValue);
             var sOption = cmd.Option<string>("-s <name>", "设置的服务器的地址。", CommandOptionType.SingleValue);
             var eOption = cmd.Option<int>("-e <method>",
@@ -60,11 +62,14 @@ namespace ArashiDNS.Aha
                 AccessKeySecret = accessKeySecretArgument.Value ?? "";
                 AccessKeyID = accessKeyIDArgument.Value ?? "";
 
+                
                 if (wOption.HasValue()) Timeout = TimeSpan.FromMilliseconds(wOption.ParsedValue);
                 if (sOption.HasValue()) Server = sOption.Value()!;
                 if (eOption.HasValue()) EcsMethod = eOption.ParsedValue;
                 if (ipOption.HasValue()) ListenerEndPoint = IPEndPoint.Parse(ipOption.Value()!);
                 if (ListenerEndPoint.Port == 0) ListenerEndPoint.Port = 16883;
+                NoCache = noCacheOption.HasValue();
+
                 if (EcsMethod != 0)
                 {
                     if (ecsIpOption.HasValue())
@@ -126,7 +131,7 @@ namespace ArashiDNS.Aha
                     return;
                 }
 
-                if (DnsCache.TryGet(query,out var cache))
+                if (!NoCache && DnsCache.TryGet(query,out var cache))
                 {
                     e.Response = cache;
                     return;
@@ -169,7 +174,7 @@ namespace ArashiDNS.Aha
                     else
                         response.ReturnCode = ReturnCode.ServerFailure;
 
-                    DnsCache.Add(query, response);
+                    if (!NoCache) DnsCache.Add(query, response);
 
                     e.Response = response;
                 }
