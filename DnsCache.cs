@@ -1,8 +1,5 @@
-﻿using System.Linq;
-using System.Net;
-using System.Runtime.Caching;
+﻿using System.Runtime.Caching;
 using ArashiDNS.Aha;
-using ARSoft.Tools.Net;
 using ARSoft.Tools.Net.Dns;
 
 namespace ArashiDNS

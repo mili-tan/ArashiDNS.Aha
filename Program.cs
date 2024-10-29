@@ -1,13 +1,10 @@
 ﻿using System.Net;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using ARSoft.Tools.Net;
 using ARSoft.Tools.Net.Dns;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ArashiDNS.Aha
@@ -43,7 +40,7 @@ namespace ArashiDNS.Aha
             var wOption = cmd.Option<int>("-w <timeout>", "等待回复的超时时间（毫秒）。", CommandOptionType.SingleValue);
             var sOption = cmd.Option<string>("-s <name>", "设置的服务器的地址。", CommandOptionType.SingleValue);
             var eOption = cmd.Option<int>("-e <method>",
-                $"设置 ECS 处理模式。{Environment.NewLine}（0=按原样、1=无ECS添加本地IP、2=无ECS添加请求IP、3=全部覆盖）",
+                $"设置 ECS 处理模式。{Environment.NewLine}（0=按原样、-1=停用ECS、1=无ECS添加本地IP、2=无ECS添加请求IP、3=全部覆盖）",
                 CommandOptionType.SingleValue);
             var ecsIpOption = cmd.Option<string>("--ecs-address <IPNetwork>", "覆盖设置本地 ECS 地址。(CIDR 形式，0.0.0.0/0)",
                 CommandOptionType.SingleValue);
@@ -161,6 +158,7 @@ namespace ArashiDNS.Aha
                             ? ip.ToString()
                             : string.Join(".", e.RemoteEndpoint.Address.ToString().Split('.').Take(3).Concat(["0/24"])),
                         3 => EcsAddress.ToString(),
+                        -1 => null,
                         _ => TryGetEcs(query, out var ip) ? ip.ToString() : null
                     };
                     var dnsEntity = await GetDnsEntity(quest.Name.ToString(), quest.RecordType.ToString(), ecs);
