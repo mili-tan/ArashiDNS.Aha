@@ -38,7 +38,7 @@ Options:
   -w <timeout>               等待回复的超时时间（毫秒）。
   -s <name>                  设置的服务器的地址。
   -e <method>                设置 ECS 处理模式。
-                             （0=按原样、1=无ECS添加本地IP、2=无ECS添加请求IP、3=全部覆盖）
+                             （0=按原样、-1=停用ECS、1=无ECS添加本地IP、2=无ECS添加请求IP、3=全部覆盖）
   --ecs-address <IPNetwork>  覆盖设置本地 ECS 地址。(CIDR 形式，0.0.0.0/0)
   -l|--listen <IPEndPoint>   监听的地址与端口。
 ```
