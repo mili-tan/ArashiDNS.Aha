@@ -32,7 +32,8 @@ namespace ArashiDNS
 
         public static bool Contains(DnsMessage qMessage)
         {
-            return MemoryCache.Default.Contains(qMessage.Questions.First().ToString());
+            return MemoryCache.Default.Contains(qMessage.Questions.First().ToString() +
+                                                (Program.TryGetEcs(qMessage, out var network) ? network : string.Empty));
         }
 
         public static (List<DnsRecordBase>, ReturnCode) Get(DnsMessage qMessage)
