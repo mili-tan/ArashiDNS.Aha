@@ -225,7 +225,8 @@ namespace ArashiDNS.Aha
             client.Timeout = Timeout;
             client.DefaultRequestHeaders.Add("User-Agent", "ArashiDNS.Aha/0.1");
 
-            return JsonSerializer.Deserialize<DNSEntity>(await client.GetStringAsync(url));
+            return JsonSerializer.Deserialize(await client.GetStringAsync(url),
+                SourceGenerationContext.Default.DNSEntity);
         }
 
         public static bool TryGetEcs(DnsMessage dnsMsg, out IPNetwork2 ipNetwork)

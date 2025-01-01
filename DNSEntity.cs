@@ -39,4 +39,11 @@ namespace ArashiDNS.Aha
         [JsonPropertyName("Answer")] public List<Answer>? Answer { get; set; }
 
     }
+
+    [JsonSerializable(typeof(DNSEntity))]
+    [JsonSerializable(typeof(Answer))]
+    [JsonSerializable(typeof(Question))]
+    internal partial class SourceGenerationContext : JsonSerializerContext
+    {
+    }
 }
