@@ -20,4 +20,4 @@ COPY --from=publish /app/publish .
 ENV ARASHI_ANY=1
 ENV ARASHI_RUNNING_IN_CONTAINER=1
 EXPOSE 16883
-ENTRYPOINT ["dotnet", "ArashiDNS.Aha.dll"]
+ENTRYPOINT ["ArashiDNS.Aha"]
