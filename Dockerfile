@@ -9,10 +9,10 @@ COPY ["ArashiDNS.Aha.csproj", "."]
 RUN dotnet restore "./ArashiDNS.Aha.csproj"
 COPY . .
 WORKDIR "/src/."
-RUN dotnet build "ArashiDNS.Aha.csproj" -c Release -o /app/build /p:UseAppHost=true /p:PublishAot=false
+RUN dotnet build "ArashiDNS.Aha.csproj" -c Release -o /app/build /p:UseAppHost=true /p:PublishAot=false /p:PublishSingleFile=false
 
 FROM build AS publish
-RUN dotnet publish "ArashiDNS.Aha.csproj" -c Release -o /app/publish /p:UseAppHost=true /p:PublishAot=false
+RUN dotnet publish "ArashiDNS.Aha.csproj" -c Release -o /app/publish /p:UseAppHost=true /p:PublishAot=false /p:PublishSingleFile=false
 
 FROM base AS final
 WORKDIR /app
@@ -20,4 +20,4 @@ COPY --from=publish /app/publish .
 ENV ARASHI_ANY=1
 ENV ARASHI_RUNNING_IN_CONTAINER=1
 EXPOSE 16883
-ENTRYPOINT ["ArashiDNS.Aha"]
+ENTRYPOINT ["dotnet","ArashiDNS.Aha.dll"]
