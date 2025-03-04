@@ -218,7 +218,7 @@ namespace ArashiDNS.Aha
                     SHA256.HashData(Encoding.UTF8.GetBytes(AccountID + AccessKeySecret + ts + name + AccessKeyID)))
                 .ToLower();
             var url =
-                $"http://{Server}/resolve?name={name}&type={type}&uid={AccountID}&ak={AccessKeyID}&key={key}&ts={ts}";
+                $"https://{Server}/resolve?name={name}&type={type}&uid={AccountID}&ak={AccessKeyID}&key={key}&ts={ts}";
 
             if (ecs != null && !string.IsNullOrWhiteSpace(ecs)) url += $"&edns_client_subnet={ecs}";
             var client = ClientFactory!.CreateClient();
