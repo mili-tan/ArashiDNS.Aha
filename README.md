@@ -41,6 +41,7 @@ Options:
                              （0=按原样、-1=停用ECS、1=无ECS添加本地IP、2=无ECS添加请求IP、3=全部覆盖）
   --ecs-address <IPNetwork>  覆盖设置本地 ECS 地址。(CIDR 形式，0.0.0.0/0)
   -l|--listen <IPEndPoint>   监听的地址与端口。
+  --https                    使用 HTTPS 传输。（请注意：HTTPS 按照 DoH 五倍计费，将导致配额消耗增加）
 ```
 
 ## See also
