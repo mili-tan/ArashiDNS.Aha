@@ -19,6 +19,7 @@ namespace ArashiDNS.Aha
         public static string AccessKeyID = "";
         public static int EcsMethod = 0;
         public static bool NoCache = false;
+        public static bool UseHttps = false;
         public static IPNetwork2 EcsAddress = new(IPAddress.Any, 0);
         public static IPEndPoint ListenerEndPoint = new(IPAddress.Loopback, 16883);
         public static TimeSpan Timeout = TimeSpan.FromMilliseconds(3000);
@@ -45,6 +46,8 @@ namespace ArashiDNS.Aha
             var ecsIpOption = cmd.Option<string>("--ecs-address <IPNetwork>", "覆盖设置本地 ECS 地址。(CIDR 形式，0.0.0.0/0)",
                 CommandOptionType.SingleValue);
             var ipOption = cmd.Option<string>("-l|--listen <IPEndPoint>", "监听的地址与端口。", CommandOptionType.SingleValue);
+            var httpsOption = cmd.Option("--https", "使用 HTTPS 传输。（请注意：HTTPS 按照 DoH 五倍计费，将导致配额消耗增加）",
+                CommandOptionType.NoValue);
 
             cmd.OnExecute(() =>
             {
@@ -65,6 +68,7 @@ namespace ArashiDNS.Aha
                 if (eOption.HasValue()) EcsMethod = eOption.ParsedValue;
                 if (ipOption.HasValue()) ListenerEndPoint = IPEndPoint.Parse(ipOption.Value()!);
                 if (ListenerEndPoint.Port == 0) ListenerEndPoint.Port = 16883;
+                UseHttps = httpsOption.HasValue();
                 NoCache = noCacheOption.HasValue();
 
                 if (EcsMethod != 0)
@@ -218,7 +222,7 @@ namespace ArashiDNS.Aha
                     SHA256.HashData(Encoding.UTF8.GetBytes(AccountID + AccessKeySecret + ts + name + AccessKeyID)))
                 .ToLower();
             var url =
-                $"https://{Server}/resolve?name={name}&type={type}&uid={AccountID}&ak={AccessKeyID}&key={key}&ts={ts}";
+                $"{(UseHttps ? "https" : "http")}://{Server}/resolve?name={name}&type={type}&uid={AccountID}&ak={AccessKeyID}&key={key}&ts={ts}";
 
             if (ecs != null && !string.IsNullOrWhiteSpace(ecs)) url += $"&edns_client_subnet={ecs}";
             var client = ClientFactory!.CreateClient();
