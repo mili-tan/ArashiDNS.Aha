@@ -79,7 +79,7 @@ namespace ArashiDNS.Aha
                     {
                         IPAddress originalIp;
                         using var httpClient = new HttpClient();
-                        httpClient.DefaultRequestHeaders.Add("User-Agent", "ArashiDNS.C/0.1");
+                        httpClient.DefaultRequestHeaders.Add("User-Agent", "ArashiDNS.Aha/0.1");
                         try
                         {
                             originalIp = IPAddress.Parse(httpClient
