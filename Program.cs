@@ -210,7 +210,6 @@ namespace ArashiDNS.Aha
                 RecordType.Aaaa => new AaaaRecord(name, ttl, IPAddress.Parse(answer.Data)),
                 RecordType.CName => new CNameRecord(name, ttl, DomainName.Parse(answer.Data)),
                 RecordType.Ns => new NsRecord(name, ttl, DomainName.Parse(answer.Data)),
-                RecordType.Txt => new TxtRecord(name, ttl, answer.Data.Trim('\"')),
                 _ => new TxtRecord(name, ttl, answer.Data.Trim('\"'))
             };
         }
