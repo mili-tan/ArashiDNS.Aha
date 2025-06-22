@@ -138,6 +138,16 @@ namespace ArashiDNS.Aha
                     return;
                 }
 
+                if (query.Questions.First().Name.IsEqualOrSubDomainOf(DomainName.Parse("use-application-dns.net")))
+                {
+                    var msg = query.CreateResponseInstance();
+                    msg.IsRecursionAllowed = true;
+                    msg.IsRecursionDesired = true;
+                    msg.ReturnCode = ReturnCode.NoError;
+                    e.Response = msg;
+                    return;
+                }
+
                 if (query.Questions.First().RecordClass == RecordClass.Chaos && query.Questions.First().RecordType == RecordType.Txt &&
                     query.Questions.First().Name.IsEqualOrSubDomainOf(DomainName.Parse("version.bind")))
                 {
