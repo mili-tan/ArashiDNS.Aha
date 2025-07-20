@@ -34,9 +34,9 @@ namespace ArashiDNS.Aha
                               $"Copyright (c) {DateTime.Now.Year} Milkey Tan. Code released under the MIT License"
             };
             cmd.HelpOption("-?|-h|--help");
-            var accountIDArgument = cmd.Argument("AccountID", "为云解析-公共 DNS 控制台的 Account ID，而非阿里云账号 ID");
-            var accessKeySecretArgument = cmd.Argument("AccessKey Secret", "为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 Secret");
-            var accessKeyIDArgument = cmd.Argument("AccessKey ID", "为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 ID");
+            var accountIDArgument = cmd.Argument("AccountID", "为云解析-解析配置-移动解析 HTTPDNS 控制台的 Account ID，而非阿里云账号 ID");
+            var accessKeySecretArgument = cmd.Argument("AccessKey Secret", "为云解析-解析配置-移动解析 HTTPDNS 控制台创建密钥中的 AccessKey 的 Secret");
+            var accessKeyIDArgument = cmd.Argument("AccessKey ID", "为云解析-解析配置-移动解析 HTTPDNS 控制台创建密钥中的 AccessKey 的 ID");
             var noCacheOption = cmd.Option("-n|--no-cache", "禁用内置缓存。", CommandOptionType.NoValue);
             var wOption = cmd.Option<int>("-w <timeout>", "等待回复的超时时间（毫秒）。", CommandOptionType.SingleValue);
             var sOption = cmd.Option<string>("-s <name>", "设置的服务器的地址。", CommandOptionType.SingleValue);
