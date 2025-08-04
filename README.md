@@ -19,6 +19,7 @@ GHCR：
 ```
 docker run -d -p 127.0.0.1:16883:16883 -p 127.0.0.1:16883:16883/udp ghcr.io/mili-tan/arashidns.aha <AccountID> <AccessKey Secret> <AccessKey ID> -l 0.0.0.0:16883
 ```
+> 当前 Docker 镜像仅支持 AMD64/x64
 --------
 
 ```
