@@ -3,7 +3,7 @@
 </p>
 
 ----------
-阿里云递归解析（公共DNS）HTTP DNS 客户端
+阿里云移动解析（公共DNS）HTTPDNS 客户端
 
 > 请确保已经 [安装 .NET SDK](https://learn.microsoft.com/zh-cn/dotnet/core/install/linux) 运行环境
 ```
@@ -19,6 +19,7 @@ GHCR：
 ```
 docker run -d -p 127.0.0.1:16883:16883 -p 127.0.0.1:16883:16883/udp ghcr.io/mili-tan/arashidns.aha <AccountID> <AccessKey Secret> <AccessKey ID> -l 0.0.0.0:16883
 ```
+> 当前 Docker 镜像仅支持 AMD64/x64
 --------
 
 ```
@@ -28,9 +29,9 @@ Copyright (c) 2024 Milkey Tan. Code released under the MIT License
 Usage: ArashiDNS.Aha [options] <AccountID> <AccessKey Secret> <AccessKey ID>
 
 Arguments:
-  AccountID                  为云解析-公共 DNS 控制台的 Account ID，而非阿里云账号 ID
-  AccessKey Secret           为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 Secret
-  AccessKey ID               为云解析-公共 DNS 控制台创建密钥中的 AccessKey 的 ID
+  AccountID                  为云解析-解析配置-移动解析HTTPDNS 控制台的 Account ID，而非阿里云账号 ID
+  AccessKey Secret           为云解析-解析配置-移动解析HTTPDNS 控制台创建密钥中的 AccessKey 的 Secret
+  AccessKey ID               为云解析-解析配置-移动解析HTTPDNS 控制台创建密钥中的 AccessKey 的 ID
 
 Options:
   -?|-h|--help               Show help information.
