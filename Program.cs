@@ -188,6 +188,13 @@ namespace ArashiDNS.Aha
 
                     if (!NoCache) DnsCache.Add(query, response);
 
+                    response.IsRecursionAllowed = true;
+                    response.IsRecursionDesired = true;
+                    //response.IsEDnsEnabled = true;
+                    //response.EDnsOptions ??= new OptRecord();
+                    //if (TryGetEcs(query, out var ecsIp)) 
+                    //    response.EDnsOptions.Options.Add(new ClientSubnetOption(ecsIp.Cidr, ecsIp.Cidr, ecsIp.FirstUsable));
+
                     e.Response = response;
                 }
                 else
