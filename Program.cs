@@ -145,6 +145,17 @@ namespace ArashiDNS.Aha
                     msg.IsRecursionDesired = true;
                     msg.ReturnCode = ReturnCode.NoError;
                     e.Response = msg;
+
+                    var infoBytes = BitConverter.GetBytes((ushort)17);
+                    var textBytes = "ArashiDNS.C: Prevents unexpected DoH upgrade"u8.ToArray();
+                    if (BitConverter.IsLittleEndian) Array.Reverse(infoBytes);
+                    var payload = new byte[infoBytes.Length + textBytes.Length];
+                    Buffer.BlockCopy(infoBytes, 0, payload, 0, infoBytes.Length);
+                    if (textBytes.Length > 0)
+                        Buffer.BlockCopy(textBytes, 0, payload, infoBytes.Length, textBytes.Length);
+                    msg.EDnsOptions ??= new OptRecord();
+                    msg.EDnsOptions.Options.Add(new UnknownOption((EDnsOptionType)15, payload));
+
                     return;
                 }
 
