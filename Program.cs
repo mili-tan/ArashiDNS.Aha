@@ -147,7 +147,7 @@ namespace ArashiDNS.Aha
                     e.Response = msg;
 
                     var infoBytes = BitConverter.GetBytes((ushort)17);
-                    var textBytes = "ArashiDNS.C: Prevents unexpected DoH upgrade"u8.ToArray();
+                    var textBytes = "ArashiDNS.Aha: Prevents unexpected DoH upgrade"u8.ToArray();
                     if (BitConverter.IsLittleEndian) Array.Reverse(infoBytes);
                     var payload = new byte[infoBytes.Length + textBytes.Length];
                     Buffer.BlockCopy(infoBytes, 0, payload, 0, infoBytes.Length);
